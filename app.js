@@ -82,8 +82,12 @@ function renderStats() {
   const c = get('cheongna');
   if (!p || !c) return;
 
-  document.getElementById('stat-pangyo').textContent = p.oa_count.toLocaleString();
-  document.getElementById('stat-cheongna').textContent = c.oa_count.toLocaleString();
+  document.getElementById('stat-pangyo').textContent = p.reachable_employment.toLocaleString() + '명';
+  document.getElementById('stat-cheongna').textContent = c.reachable_employment.toLocaleString() + '명';
+  document.getElementById('stat-pangyo-sub').textContent =
+    `도달가능 인구 ${p.reachable_population.toLocaleString()}명 · 역 인근 집계구 ${p.oa_count.toLocaleString()}개`;
+  document.getElementById('stat-cheongna-sub').textContent =
+    `도달가능 인구 ${c.reachable_population.toLocaleString()}명 · 역 인근 집계구 ${c.oa_count.toLocaleString()}개`;
 
   const ratio = (p.reachable_employment / c.reachable_employment).toFixed(1);
   document.getElementById('compare-text').innerHTML =
