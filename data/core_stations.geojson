@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"region": "pangyo", "name": "판교역"}, "geometry": {"type": "Point", "coordinates": [127.11144319589552, 37.39478218191577]}}, {"type": "Feature", "properties": {"region": "cheongna", "name": "청라국제도시역"}, "geometry": {"type": "Point", "coordinates": [126.62464505549164, 37.55648532952862]}}]}

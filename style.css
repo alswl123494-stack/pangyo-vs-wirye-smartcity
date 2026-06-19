@@ -1,0 +1,236 @@
+:root {
+  --paper: #f7f4ec;
+  --paper-raised: #ffffff;
+  --ink: #1c1f24;
+  --ink-soft: #5b5a52;
+  --rule: #ddd6c5;
+  --pangyo: #0f6e56;
+  --pangyo-fill: #9fe1cb;
+  --pangyo-soft: #e1f5ee;
+  --cheongna: #993c1d;
+  --cheongna-fill: #f0997b;
+  --cheongna-soft: #faece7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.6;
+}
+
+.masthead {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 48px 24px 24px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.masthead h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 700;
+  font-size: 32px;
+  margin: 0 0 12px;
+}
+
+.masthead h1 .vs {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 22px;
+  margin: 0 8px;
+}
+
+.subtitle {
+  color: var(--ink-soft);
+  font-size: 15px;
+  margin: 0;
+}
+
+.controls {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px 16px;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-label {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.toggle-pair {
+  display: flex;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.toggle-btn {
+  border: none;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  padding: 7px 16px;
+  cursor: pointer;
+}
+
+.toggle-btn + .toggle-btn { border-left: 1px solid var(--rule); }
+
+.toggle-btn.active {
+  background: var(--ink);
+  color: var(--paper-raised);
+}
+
+.map-stage {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: grid;
+  grid-template-columns: 1fr 2px 1fr;
+  gap: 0;
+  height: 480px;
+}
+
+.map-panel {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.panel-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 500;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--paper-raised);
+}
+
+.pangyo-tag { color: var(--pangyo); border-left: 3px solid var(--pangyo); }
+.cheongna-tag { color: var(--cheongna); border-left: 3px solid var(--cheongna); }
+
+.map-divider {
+  background: var(--rule);
+}
+
+.map-stage.overlay-mode {
+  grid-template-columns: 1fr;
+  height: 560px;
+}
+.map-stage.overlay-mode .map-divider,
+.map-stage.overlay-mode [data-region="cheongna"] {
+  display: none;
+}
+
+.stats {
+  max-width: 920px;
+  margin: 32px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.stat-card {
+  background: var(--paper-raised);
+  border-radius: 12px;
+  padding: 20px 24px;
+  border: 1px solid var(--rule);
+}
+
+.pangyo-card { border-left: 4px solid var(--pangyo); }
+.cheongna-card { border-left: 4px solid var(--cheongna); }
+
+.stat-label {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 6px;
+}
+
+.stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pangyo-card .stat-value { color: var(--pangyo); }
+.cheongna-card .stat-value { color: var(--cheongna); }
+
+.stat-unit {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+}
+
+.stat-compare {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+  min-width: 120px;
+}
+
+.curve-section {
+  max-width: 920px;
+  margin: 40px auto 0;
+  padding: 0 24px;
+}
+
+.curve-section h2 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px;
+  margin: 0 0 6px;
+}
+
+.curve-caption {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 16px;
+}
+
+.data-footer {
+  max-width: 920px;
+  margin: 40px auto 0;
+  padding: 16px 24px 48px;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 760px) {
+  .map-stage { grid-template-columns: 1fr; height: auto; }
+  .map-stage .map-divider { display: none; }
+  .map { height: 320px; }
+  .stats { grid-template-columns: 1fr; }
+}
