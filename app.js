@@ -1,11 +1,36 @@
 const REGION_COLOR = { pangyo: '#0f6e56', cheongna: '#993c1d' };
 const REGION_FILL = { pangyo: '#9fe1cb', cheongna: '#f0997b' };
-const REGION_LABEL = { pangyo: '판교', cheongna: '청라국제도시' };
+
+const LANDUSE_COLORS = {
+  '주거지역': '#4a7fb5',
+  '상업지역': '#d9853b',
+  '공업지역': '#8a6bbf',
+  '녹지지역': '#6fae57',
+  '기타': '#999999'
+};
+
+const LANDUSE_CATEGORY = {
+  '제1종전용주거지역': '주거지역',
+  '제1종일반주거지역': '주거지역',
+  '제2종일반주거지역': '주거지역',
+  '제3종일반주거지역': '주거지역',
+  '준주거지역': '주거지역',
+  '중심상업지역': '상업지역',
+  '근린상업지역': '상업지역',
+  '일반상업지역': '상업지역',
+  '유통상업지역': '상업지역',
+  '준공업지역': '공업지역',
+  '일반공업지역': '공업지역',
+  '자연녹지지역': '녹지지역',
+  '보전녹지지역': '녹지지역',
+};
 
 let currentMinute = 30;
 let currentMode = 'split';
+let currentLayer = 'isochrone';
 let isoLayers = { pangyo: {}, cheongna: {} };
 let stationLayers = {};
+let landuseLayers = {};
 let statsData = [];
 let curveData = [];
 let mapPangyo, mapCheongna;
@@ -57,11 +82,36 @@ function addStation(map, region, geojson) {
   });
 }
 
+function addLanduse(region, geojson) {
+  landuseLayers[region] = L.geoJSON(geojson, {
+    style: (feature) => {
+      const uname = feature.properties.uname;
+      const cat = LANDUSE_CATEGORY[uname] || '기타';
+      return { color: LANDUSE_COLORS[cat], weight: 0.5, fillColor: LANDUSE_COLORS[cat], fillOpacity: 0.6 };
+    },
+    onEachFeature: (f, l) => l.bindPopup(`<b>${f.properties.uname}</b>`),
+  });
+}
+
+function updateLegend() {
+  const legend = document.getElementById('landuse-legend');
+  if (currentLayer !== 'landuse') {
+    legend.style.display = 'none';
+    return;
+  }
+  legend.style.display = 'flex';
+  legend.innerHTML = Object.entries(LANDUSE_COLORS)
+    .map(([cat, color]) => `<span class="legend-item"><i style="background:${color}"></i>${cat}</span>`)
+    .join('');
+}
+
 function renderIsochrone() {
   [mapPangyo, mapCheongna].forEach((map) => {
     if (!map) return;
     Object.values(isoLayers.pangyo).forEach((l) => map.removeLayer(l));
     Object.values(isoLayers.cheongna).forEach((l) => map.removeLayer(l));
+    if (landuseLayers.pangyo) map.removeLayer(landuseLayers.pangyo);
+    if (landuseLayers.cheongna) map.removeLayer(landuseLayers.cheongna);
   });
 
   isoLayers.pangyo[currentMinute].addTo(mapPangyo);
@@ -72,6 +122,27 @@ function renderIsochrone() {
     stationLayers.cheongna.addTo(mapCheongna);
   } else {
     isoLayers.cheongna[currentMinute].addTo(mapPangyo);
+    stationLayers.cheongna.addTo(mapPangyo);
+  }
+}
+
+function renderLanduse() {
+  [mapPangyo, mapCheongna].forEach((map) => {
+    if (!map) return;
+    Object.values(isoLayers.pangyo).forEach((l) => map.removeLayer(l));
+    Object.values(isoLayers.cheongna).forEach((l) => map.removeLayer(l));
+    if (landuseLayers.pangyo) map.removeLayer(landuseLayers.pangyo);
+    if (landuseLayers.cheongna) map.removeLayer(landuseLayers.cheongna);
+  });
+
+  landuseLayers.pangyo.addTo(mapPangyo);
+  stationLayers.pangyo.addTo(mapPangyo);
+
+  if (currentMode === 'split') {
+    landuseLayers.cheongna.addTo(mapCheongna);
+    stationLayers.cheongna.addTo(mapCheongna);
+  } else {
+    landuseLayers.cheongna.addTo(mapPangyo);
     stationLayers.cheongna.addTo(mapPangyo);
   }
 }
@@ -143,7 +214,7 @@ async function init() {
   mapCheongna = makeMap('map-cheongna', [37.5565, 126.6246]);
   syncMaps(mapPangyo, mapCheongna);
 
-  const [iso30p, iso60p, iso30c, iso60c, stationsP, stationsC, stats, curve] = await Promise.all([
+  const [iso30p, iso60p, iso30c, iso60c, stationsP, stationsC, stats, curve, landuseP, landuseC] = await Promise.all([
     loadGeojson('data/isochrone_pangyo_30.geojson'),
     loadGeojson('data/isochrone_pangyo_60.geojson'),
     loadGeojson('data/isochrone_cheongna_30.geojson'),
@@ -152,6 +223,8 @@ async function init() {
     loadGeojson('data/core_stations.geojson'),
     loadGeojson('data/stats.json'),
     loadGeojson('data/curve.json'),
+    loadGeojson('data/landuse_pangyo.geojson'),
+    loadGeojson('data/landuse_cheongna.geojson'),
   ]);
 
   addIsochrone(null, 'pangyo', 30, iso30p);
@@ -165,6 +238,9 @@ async function init() {
   });
   addStation(mapPangyo, 'pangyo', onlyRegion(stationsP, 'pangyo'));
   addStation(mapCheongna, 'cheongna', onlyRegion(stationsC, 'cheongna'));
+
+  addLanduse('pangyo', landuseP);
+  addLanduse('cheongna', landuseC);
 
   statsData = stats;
   curveData = curve;
@@ -182,7 +258,7 @@ async function init() {
     document.querySelectorAll('#time-toggle .toggle-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     currentMinute = Number(btn.dataset.min);
-    renderIsochrone();
+    if (currentLayer === 'isochrone') renderIsochrone();
     renderStats();
   });
 
@@ -197,7 +273,19 @@ async function init() {
       mapPangyo.invalidateSize();
       mapCheongna.invalidateSize();
     }, 50);
-    renderIsochrone();
+    if (currentLayer === 'isochrone') renderIsochrone();
+    else renderLanduse();
+  });
+
+  document.getElementById('layer-toggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('.toggle-btn');
+    if (!btn) return;
+    document.querySelectorAll('#layer-toggle .toggle-btn').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentLayer = btn.dataset.layer;
+    updateLegend();
+    if (currentLayer === 'isochrone') renderIsochrone();
+    else renderLanduse();
   });
 }
 
