@@ -8,6 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="style.css">
+<style>
+.legend { display: flex; gap: 15px; flex-wrap: wrap; padding: 10px 15px; background: white; border-radius: 5px; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: absolute; bottom: 20px; left: 20px; z-index: 100; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-item i { width: 16px; height: 16px; border-radius: 2px; }
+</style>
 </head>
 <body>
 
@@ -32,7 +37,16 @@
       <button class="toggle-btn" data-mode="overlay">겹쳐보기</button>
     </div>
   </div>
+  <div class="control-group">
+    <span class="control-label">레이어</span>
+    <div class="toggle-pair" id="layer-toggle">
+      <button class="toggle-btn active" data-layer="isochrone">등시간권</button>
+      <button class="toggle-btn" data-layer="landuse">토지이용</button>
+    </div>
+  </div>
 </section>
+
+<div class="legend" id="landuse-legend" hidden></div>
 
 <section class="map-stage" id="map-stage">
   <div class="map-panel" data-region="pangyo">
