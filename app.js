@@ -103,8 +103,32 @@ function addLanduse(region, geojson) {
       return { color: LANDUSE_COLORS[cat], weight: 0.5, fillColor: LANDUSE_COLORS[cat], fillOpacity: 0.6 };
     },
     onEachFeature: (f, l) => {
-      const uname = f.properties.uname;
-      l.bindPopup(`<b>${uname}</b>`);
+      const uname = f.properties.uname || '용도 미지정';
+      
+      const totalArea = f.properties.total_area || f.properties.floor_area || f.properties.grs_ara;
+      const far = f.properties.far || f.properties.vl_rat;
+      
+      const displayArea = totalArea ? Number(totalArea).toLocaleString() + ' ㎡' : '데이터 없음';
+      const displayFar = far ? Number(far).toLocaleString() + ' %' : '데이터 없음';
+      
+      const popupContent = `
+        <div style="font-family: 'Noto Sans KR', sans-serif; padding: 4px; min-width: 160px;">
+          <b style="font-size: 14px; color: var(--ink);">${uname}</b>
+          <hr style="margin: 8px 0; border: 0; border-top: 1px solid var(--rule);">
+          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #f5f5f5;">
+              <td style="color: var(--ink-soft); padding: 4px 0; text-align: left;">연면적</td>
+              <td style="text-align: right; font-weight: 500; color: var(--ink);">${displayArea}</td>
+            </tr>
+            <tr>
+              <td style="color: var(--ink-soft); padding: 4px 0; text-align: left;">용적률</td>
+              <td style="text-align: right; font-weight: 500; color: var(--ink);">${displayFar}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+      
+      l.bindPopup(popupContent);
     },
   });
 }
