@@ -43,20 +43,32 @@ function makeMap(elId, center) {
 }
 
 function syncMaps(a, b) {
-  let syncing = false;
-  a.on('zoomend', () => {
-    if (syncing) return;
-    syncing = true;
-    if (b.getZoom() !== a.getZoom()) b.setZoom(a.getZoom(), { animate: false });
-    syncing = false;
-  });
-  b.on('zoomend', () => {
-    if (syncing) return;
-    syncing = true;
-    if (a.getZoom() !== b.getZoom()) a.setZoom(b.getZoom(), { animate: false });
-    syncing = false;
-  });
+    let syncing = false;
+
+    // a 지도의 조작을 b 지도에 반영
+    a.on('zoomend moveend', () => {
+        if (syncing) return;
+        syncing = true;
+        
+        // 줌과 중심 위치를 동시에 설정
+        if (b.getZoom() !== a.getZoom() || !b.getCenter().equals(a.getCenter())) {
+            b.setView(a.getCenter(), a.getZoom(), { animate: false });
+        }
+        syncing = false;
+    });
+
+    // b 지도의 조작을 a 지도에 반영
+    b.on('zoomend moveend', () => {
+        if (syncing) return;
+        syncing = true;
+        
+        if (a.getZoom() !== b.getZoom() || !a.getCenter().equals(a.getCenter())) {
+            a.setView(b.getCenter(), b.getZoom(), { animate: false });
+        }
+        syncing = false;
+    });
 }
+
 
 async function loadGeojson(path) {
   const res = await fetch(path);
