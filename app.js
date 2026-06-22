@@ -169,7 +169,7 @@ function renderStats() {
     `${currentMinute}분 기준<br><b style="font-size:18px;color:#1c1f24">${ratio}배</b><br>도달가능 종사자`;
 }
 
-let chart, landuseChart, landuseCompositionChart;
+let chart, landuseCompositionChart;
 function renderCurve() {
   const ctx = document.getElementById('curve-chart').getContext('2d');
   const minutes = [...new Set(curveData.map((d) => d.minute))].sort((a, b) => a - b);
@@ -213,97 +213,54 @@ function renderCurve() {
   });
 }
 
-function renderLanduseChart() {
-  const ctx = document.getElementById('landuse-chart')?.getContext('2d');
+function renderLanduseCompositionChart() {
+  const ctx = document.getElementById('landuse-composition-chart');
   if (!ctx) return;
-  
-  const categories = ['주거지역', '상업지역', '공업지역', '녹지지역'];
-  const countByCategory = (geojson) => {
-    const counts = {};
-    categories.forEach(c => counts[c] = 0);
-    geojson.features.forEach(f => {
-      const cat = LANDUSE_CATEGORY[f.properties.uname] || '기타';
-      counts[cat] = (counts[cat] || 0) + 1;
-    });
-    return categories.map(c => counts[c]);
+
+  const canvas = ctx.getContext('2d');
+  if (!canvas) return;
+
+  const compositionData = {
+    pangyo: [55.7, 10.0, 0, 34.4],
+    cheongna: [2.3, 11.2, 9.4, 71.2]
   };
 
-  if (landuseChart) landuseChart.destroy();
-  landuseChart = new Chart(ctx, {
+  const categories = ['주거지역', '상업지역', '공업지역', '녹지지역'];
+
+  if (landuseCompositionChart) landuseCompositionChart.destroy();
+  
+  landuseCompositionChart = new Chart(canvas, {
     type: 'bar',
     data: {
       labels: categories,
       datasets: [
         {
           label: '판교',
-          data: countByCategory(landuseGeomData.pangyo),
-          backgroundColor: REGION_COLOR.pangyo + 'cc',
-          borderColor: REGION_COLOR.pangyo,
-          borderWidth: 1,
+          data: compositionData.pangyo,
+          backgroundColor: '#0f6e56',
+          borderColor: '#0f6e56',
+          borderWidth: 2,
         },
         {
           label: '청라',
-          data: countByCategory(landuseGeomData.cheongna),
-          backgroundColor: REGION_COLOR.cheongna + 'cc',
-          borderColor: REGION_COLOR.cheongna,
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } },
-      scales: { y: { title: { display: true, text: '필지 개수' } } },
-    },
-  });
-}
-
-function renderLanduseCompositionChart() {
-  const ctx = document.getElementById('landuse-composition-chart')?.getContext('2d');
-  if (!ctx) return;
-
-  // 용도지역별 면적 구성비 (%)
-  const compositionData = {
-    pangyo: { '주거지역': 55.7, '상업지역': 10.0, '공업지역': 0, '녹지지역': 34.4 },
-    cheongna: { '주거지역': 2.3, '상업지역': 11.2, '공업지역': 9.4, '녹지지역': 71.2 }
-  };
-
-  const categories = ['주거지역', '상업지역', '공업지역', '녹지지역'];
-  const pangyo = categories.map(c => compositionData.pangyo[c]);
-  const cheongna = categories.map(c => compositionData.cheongna[c]);
-
-  if (landuseCompositionChart) landuseCompositionChart.destroy();
-  landuseCompositionChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: categories,
-      datasets: [
-        {
-          label: '판교 (%)',
-          data: pangyo,
-          backgroundColor: '#9fe1cb',
-          borderColor: REGION_COLOR.pangyo,
-          borderWidth: 2,
-        },
-        {
-          label: '청라 (%)',
-          data: cheongna,
-          backgroundColor: '#f0997b',
-          borderColor: REGION_COLOR.cheongna,
+          data: compositionData.cheongna,
+          backgroundColor: '#993c1d',
+          borderColor: '#993c1d',
           borderWidth: 2,
         },
       ],
     },
     options: {
+      indexAxis: 'y',
       responsive: true,
+      maintainAspectRatio: true,
       plugins: { 
-        legend: { position: 'bottom', labels: { font: { size: 12 } } },
-        title: { display: true, text: '용도지역 필지 구성비 (면적 기준, %)' }
+        legend: { position: 'bottom', labels: { font: { size: 12 }, boxWidth: 15 } },
       },
       scales: { 
-        y: { 
-          title: { display: true, text: '비율 (%)' },
-          max: 100
+        x: { 
+          max: 100,
+          ticks: { callback: v => v + '%' }
         } 
       },
     },
@@ -351,7 +308,6 @@ async function init() {
   renderIsochrone();
   renderStats();
   renderCurve();
-  renderLanduseChart();
   renderLanduseCompositionChart();
 
   mapPangyo.fitBounds(isoLayers.pangyo[60].getBounds(), { padding: [20, 20] });
