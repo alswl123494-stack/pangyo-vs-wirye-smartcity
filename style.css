@@ -337,40 +337,40 @@ h1 {
     display: none;
 }
 /* ==========================================================================
-   토지이용 범례(Legend) 스타일 복구 및 정렬
+   토지이용 범례(Legend) 스타일 최종 완벽 복구
    ========================================================================== */
 
-#landuse-legend {
-  display: none;             /* 기본적으로는 숨김 */
+.legend-group {
+  display: none !important;  /* 기본 숨김 */
   max-width: 920px;
-  margin: 12px auto 0;
+  margin: 16px auto 0;
   padding: 8px 24px;
-  justify-content: center;   /* 가운데 정렬 */
+  justify-content: center;   /* 가로 한가운데 정렬 */
   align-items: center;
-  gap: 20px;                 /* 범례 아이템 간의 간격 생성 */
+  gap: 24px;                 /* 글자들 사이 여백 생성 */
   flex-wrap: wrap;
 }
 
-/* 자바스크립트에 의해 .active 클래스가 붙으면 보여줌 */
-#landuse-legend.active {
+/* 자바스크립트 활성화 시 Flexbox 레이아웃 켬 */
+.legend-group.active {
   display: flex !important;
 }
 
-/* 각각의 범례 아이템 (색상상자 + 텍스트) */
+/* 각각의 범례 아이템 (색상 상자 + 텍스트 정렬) */
 .legend-item {
-  display: inline-flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
   font-size: 13px;
   color: var(--ink);
   font-weight: 500;
-  gap: 6px;                  /* 네모 상자와 글자 사이 간격 */
+  gap: 6px;                  /* 네모와 글자 사이 띄어쓰기 */
 }
 
-/* 범례용 색상 네모 상자 구현 */
+/* 사라졌던 색상 사각형 마커 되살리기 */
 .legend-item i {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;        /* 둥근 사각형태 */
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  display: inline-block !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
 }
