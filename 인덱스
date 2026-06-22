@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터로 진단하는 업무지구의 성공과 실패 — 판교 vs 청라</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css">
+<style>
+.legend { display: flex; gap: 15px; flex-wrap: wrap; padding: 10px 15px; background: white; border-radius: 5px; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: absolute; bottom: 20px; left: 20px; z-index: 100; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-item i { width: 16px; height: 16px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">데이터로 진단하는 업무지구의 성공과 실패</p>
+  <h1>판교테크노밸리 <span class="vs">vs</span> 청라국제업무지구</h1>
+  <p class="subtitle">지하철 네트워크 등시간권 비교</p>
+</header>
+
+<section class="controls">
+  <div class="control-group">
+    <span class="control-label">등시간권</span>
+    <div class="toggle-pair" id="time-toggle">
+      <button class="toggle-btn active" data-min="30">30분</button>
+      <button class="toggle-btn" data-min="60">60분</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <span class="control-label">보기 모드</span>
+    <div class="toggle-pair" id="view-toggle">
+      <button class="toggle-btn active" data-mode="split">나란히</button>
+      <button class="toggle-btn" data-mode="overlay">겹쳐보기</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <span class="control-label">레이어</span>
+    <div class="toggle-pair" id="layer-toggle">
+      <button class="toggle-btn active" data-layer="isochrone">등시간권</button>
+      <button class="toggle-btn" data-layer="landuse">토지이용</button>
+    </div>
+  </div>
+</section>
+
+<div class="legend" id="landuse-legend" hidden></div>
+
+<section class="map-stage" id="map-stage">
+  <div class="map-panel" data-region="pangyo">
+    <div class="panel-tag pangyo-tag">판교테크노밸리 · 성공 사례</div>
+    <div id="map-pangyo" class="map"></div>
+  </div>
+  <div class="map-divider" id="map-divider" aria-hidden="true"></div>
+  <div class="map-panel" data-region="cheongna">
+    <div class="panel-tag cheongna-tag">청라국제업무지구 · 비교 사례</div>
+    <div id="map-cheongna" class="map"></div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stat-card pangyo-card">
+    <p class="stat-label">판교역 기준 도달 가능 종사자수</p>
+    <p class="stat-value" id="stat-pangyo">—</p>
+    <p class="stat-unit" id="stat-pangyo-sub">— 명</p>
+  </div>
+  <div class="stat-compare" id="stat-compare">
+    <span id="compare-text">데이터 불러오는 중…</span>
+  </div>
+  <div class="stat-card cheongna-card">
+    <p class="stat-label">청라국제도시역 기준 도달 가능 종사자수</p>
+    <p class="stat-value" id="stat-cheongna">—</p>
+    <p class="stat-unit" id="stat-cheongna-sub">— 명</p>
+  </div>
+</section>
+
+<section class="curve-section">
+  <h2>누적 접근성 곡선</h2>
+  <p class="curve-caption">핵심역에서 출발해 t분 이내 도달 가능한 역 수의 변화 (0~60분). 인구·종사자 버전은 SGIS 집계구 결합 후 업데이트됩니다.</p>
+  <canvas id="curve-chart" height="220"></canvas>
+</section>
+
+<footer class="data-footer">
+  <p>기준 시점 2026-05-04 · 데이터: 수도권 지하철 네트워크 그래프(subway_network.zip) · 등시간권은 도달 가능 역의 700m 보행 버퍼 합집합으로 근사 (보행망 미반영, 분석의 한계 참고)</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
