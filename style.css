@@ -234,3 +234,7 @@ body {
   .map { height: 320px; }
   .stats { grid-template-columns: 1fr; }
 }
+
+<div class="container">
+    <h1>판교테크노밸리 vs 청라국제업무지구</h1>
+    <p class="subtitle">지하철 네트워크 등시간권 비교</p>
