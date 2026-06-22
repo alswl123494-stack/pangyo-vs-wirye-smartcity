@@ -8,11 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="style.css">
-<style>
-.legend { display: flex; gap: 15px; flex-wrap: wrap; padding: 10px 15px; background: white; border-radius: 5px; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: absolute; bottom: 20px; left: 20px; z-index: 100; }
-.legend-item { display: flex; align-items: center; gap: 6px; }
-.legend-item i { width: 16px; height: 16px; border-radius: 2px; }
-</style>
 </head>
 <body>
 
@@ -80,6 +75,18 @@
   <h2>누적 접근성 곡선</h2>
   <p class="curve-caption">핵심역에서 출발해 t분 이내 도달 가능한 역 수의 변화 (0~60분). 인구·종사자 버전은 SGIS 집계구 결합 후 업데이트됩니다.</p>
   <canvas id="curve-chart" height="220"></canvas>
+</section>
+
+<section class="curve-section">
+  <h2>토지이용 구성 비교</h2>
+  <p class="curve-caption">30분 등시간권 내 용도지역별 필지 개수 비교</p>
+  <canvas id="landuse-chart" height="220"></canvas>
+</section>
+
+<section class="curve-section">
+  <h2>용도지역 필지 구성비</h2>
+  <p class="curve-caption">반경 1.2km 내 용도지역별 면적 기준 구성비 (%)</p>
+  <canvas id="landuse-composition-chart" height="220"></canvas>
 </section>
 
 <footer class="data-footer">
