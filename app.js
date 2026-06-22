@@ -100,10 +100,10 @@ function addLanduse(region, geojson) {
 function updateLegend() {
   const legend = document.getElementById('landuse-legend');
   if (currentLayer !== 'landuse') {
-    legend.style.display = 'none';
+    legend.classList.remove('active');
     return;
   }
-  legend.style.display = 'flex';
+  legend.classList.add('active');
   legend.innerHTML = Object.entries(LANDUSE_COLORS)
     .map(([cat, color]) => `<span class="legend-item"><i style="background:${color}"></i>${cat}</span>`)
     .join('');
@@ -124,9 +124,6 @@ function renderIsochrone() {
   if (currentMode === 'split') {
     isoLayers.cheongna[currentMinute].addTo(mapCheongna);
     stationLayers.cheongna.addTo(mapCheongna);
-  } else {
-    isoLayers.cheongna[currentMinute].addTo(mapPangyo);
-    stationLayers.cheongna.addTo(mapPangyo);
   }
 }
 
@@ -145,9 +142,6 @@ function renderLanduse() {
   if (currentMode === 'split') {
     landuseLayers.cheongna.addTo(mapCheongna);
     stationLayers.cheongna.addTo(mapCheongna);
-  } else {
-    landuseLayers.cheongna.addTo(mapPangyo);
-    stationLayers.cheongna.addTo(mapPangyo);
   }
 }
 
@@ -169,7 +163,7 @@ function renderStats() {
     `${currentMinute}분 기준<br><b style="font-size:18px;color:#1c1f24">${ratio}배</b><br>도달가능 종사자`;
 }
 
-let chart;
+let chart, landuseCompositionChart;
 function renderCurve() {
   const ctx = document.getElementById('curve-chart').getContext('2d');
   const minutes = [...new Set(curveData.map((d) => d.minute))].sort((a, b) => a - b);
@@ -209,6 +203,37 @@ function renderCurve() {
         x: { title: { display: true, text: '소요시간(분)' } },
         y: { title: { display: true, text: '도달가능 종사자수' }, ticks: { callback: (v) => v.toLocaleString() } },
       },
+    },
+  });
+}
+
+function renderLanduseCompositionChart() {
+  const ctx = document.getElementById('landuse-composition-chart');
+  if (!ctx) return;
+  const canvas = ctx.getContext('2d');
+  if (!canvas) return;
+
+  const data = {
+    labels: ['주거지역', '상업지역', '공업지역', '녹지지역'],
+    pangyo: [55.7, 10.0, 0, 34.4],
+    cheongna: [2.3, 11.2, 9.4, 71.2]
+  };
+
+  if (landuseCompositionChart) landuseCompositionChart.destroy();
+  landuseCompositionChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [
+        { label: '판교', data: data.pangyo, backgroundColor: '#0f6e56', borderColor: '#0f6e56', borderWidth: 1 },
+        { label: '청라', data: data.cheongna, backgroundColor: '#993c1d', borderColor: '#993c1d', borderWidth: 1 },
+      ],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } },
+      scales: { x: { max: 100, ticks: { callback: v => v + '%' } } },
     },
   });
 }
@@ -254,6 +279,7 @@ async function init() {
   renderIsochrone();
   renderStats();
   renderCurve();
+  renderLanduseCompositionChart();
 
   mapPangyo.fitBounds(isoLayers.pangyo[60].getBounds(), { padding: [20, 20] });
   mapCheongna.fitBounds(isoLayers.cheongna[60].getBounds(), { padding: [20, 20] });
@@ -274,6 +300,7 @@ async function init() {
     document.querySelectorAll('#view-toggle .toggle-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     currentMode = btn.dataset.mode;
+    document.getElementById('map-stage').classList.toggle('split-mode', currentMode === 'split');
     document.getElementById('map-stage').classList.toggle('overlay-mode', currentMode === 'overlay');
     setTimeout(() => {
       mapPangyo.invalidateSize();
