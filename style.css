@@ -336,3 +336,41 @@ h1 {
 #map-stage.overlay-mode #map-cheongna {
     display: none;
 }
+/* ==========================================================================
+   토지이용 범례(Legend) 스타일 복구 및 정렬
+   ========================================================================== */
+
+#landuse-legend {
+  display: none;             /* 기본적으로는 숨김 */
+  max-width: 920px;
+  margin: 12px auto 0;
+  padding: 8px 24px;
+  justify-content: center;   /* 가운데 정렬 */
+  align-items: center;
+  gap: 20px;                 /* 범례 아이템 간의 간격 생성 */
+  flex-wrap: wrap;
+}
+
+/* 자바스크립트에 의해 .active 클래스가 붙으면 보여줌 */
+#landuse-legend.active {
+  display: flex !important;
+}
+
+/* 각각의 범례 아이템 (색상상자 + 텍스트) */
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+  gap: 6px;                  /* 네모 상자와 글자 사이 간격 */
+}
+
+/* 범례용 색상 네모 상자 구현 */
+.legend-item i {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;        /* 둥근 사각형태 */
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
