@@ -1,110 +1,118 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>판교 vs 청라 스마트시티 분석</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Noto Sans KR', Arial, sans-serif; background: #f5f5f5; color: #333; }
-    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-    h1 { text-align: center; margin: 30px 0 5px; color: #1f4e78; font-size: 32px; }
-    .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 16px; }
-    .controls { display: flex; gap: 30px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
-    .toggle-group { display: flex; gap: 10px; align-items: center; }
-    .toggle-group label { font-weight: bold; white-space: nowrap; }
-    .toggle-btn { padding: 8px 16px; border: 2px solid #ccc; background: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; }
-    .toggle-btn.active { background: #1f4e78; color: white; border-color: #1f4e78; }
-    .toggle-btn:hover { border-color: #1f4e78; }
-    
-    .map-stage { position: relative; margin-bottom: 30px; }
-    .map-stage.split-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .map-stage.overlay-mode { display: grid; grid-template-columns: 1fr; }
-    .map-stage.overlay-mode #map-cheongna { display: none; }
-    
-    .map { height: 450px; border: 1px solid #ddd; border-radius: 4px; position: relative; }
-    .overlay-mode .map { height: 600px; }
-    
-    .legend { position: absolute; bottom: 20px; left: 20px; background: white; padding: 15px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none; gap: 15px; flex-wrap: wrap; z-index: 400; }
-    .legend.active { display: flex; }
-    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 13px; }
-    .legend-item i { width: 18px; height: 18px; display: inline-block; border: 1px solid #ccc; }
-    
-    .stats { display: grid; grid-template-columns: 1fr 0.8fr 1fr; gap: 20px; margin-bottom: 30px; }
-    .stat-card { background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .stat-card.pangyo { border-left: 5px solid #0f6e56; }
-    .stat-card.cheongna { border-left: 5px solid #993c1d; }
-    .stat-title { font-size: 13px; color: #666; margin-bottom: 10px; }
-    .stat-value { font-size: 26px; font-weight: bold; color: #1f4e78; margin-bottom: 5px; }
-    .stat-sub { font-size: 11px; color: #999; line-height: 1.4; }
-    .stat-compare { display: flex; align-items: center; justify-content: center; background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
-    
-    .curve-section { background: white; padding: 25px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .curve-section h2 { margin-bottom: 8px; color: #1f4e78; font-size: 18px; }
-    .curve-caption { font-size: 13px; color: #666; margin-bottom: 15px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>판교테크노밸리 vs 청라국제업무지구</h1>
-    <p class="subtitle">지하철 네트워크 등시간권 비교</p>
+# -*- coding: utf-8 -*-
+"""
+토지이용(용도지역) 구성비 — 반경 클리핑 버전 (버그 수정)
+이전 스크립트는 반경에 "걸치는" 필지를 통째로 계산해서 면적이 부풀려졌음.
+이번엔 분석원(반경 1.2km)으로 실제로 잘라낸(intersection) 면적만 계산함.
 
-    <div class="controls">
-      <div id="time-toggle" class="toggle-group">
-        <label>등시간권:</label>
-        <button class="toggle-btn active" data-min="30">30분</button>
-        <button class="toggle-btn" data-min="60">60분</button>
-      </div>
-      <div id="view-toggle" class="toggle-group">
-        <label>보기:</label>
-        <button class="toggle-btn active" data-mode="split">나란히</button>
-        <button class="toggle-btn" data-mode="overlay">겹쳐보기</button>
-      </div>
-      <div id="layer-toggle" class="toggle-group">
-        <label>레이어:</label>
-        <button class="toggle-btn active" data-layer="isochrone">등시간권</button>
-        <button class="toggle-btn" data-layer="landuse">토지이용</button>
-      </div>
-    </div>
+실행 전: pip install requests shapely
+"""
+import math
+import requests
+from shapely.geometry import Point, Polygon, MultiPolygon
+from shapely.ops import unary_union
+from collections import defaultdict
 
-    <div id="map-stage" class="map-stage split-mode">
-      <div id="map-pangyo" class="map"></div>
-      <div id="map-cheongna" class="map"></div>
-      <div id="landuse-legend" class="legend"></div>
-    </div>
+VWORLD_KEY = "여기에_VWorld_인증키"
+DOMAIN = "alswl123494-stack.github.io"
 
-    <div class="stats">
-      <div class="stat-card pangyo">
-        <div class="stat-title">판교 - 도달가능 종사자</div>
-        <div class="stat-value" id="stat-pangyo">—</div>
-        <div class="stat-sub" id="stat-pangyo-sub">—</div>
-      </div>
-      <div class="stat-compare">
-        <div id="compare-text">—</div>
-      </div>
-      <div class="stat-card cheongna">
-        <div class="stat-title">청라 - 도달가능 종사자</div>
-        <div class="stat-value" id="stat-cheongna">—</div>
-        <div class="stat-sub" id="stat-cheongna-sub">—</div>
-      </div>
-    </div>
+RADIUS_M = 1200
+REGIONS = {
+    "pangyo": (127.1112, 37.3948),
+    "cheongna": (126.6246, 37.5565),
+}
 
-    <div class="curve-section">
-      <h2>누적 접근성 곡선</h2>
-      <p class="curve-caption">핵심역에서 출발해 t분 이내 도달 가능한 종사자 수의 변화</p>
-      <canvas id="curve-chart" height="200"></canvas>
-    </div>
+VWORLD_URL = "https://api.vworld.kr/req/data"
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+}
 
-    <div class="curve-section">
-      <h2>용도지역 필지 구성비</h2>
-      <p class="curve-caption">반경 1.2km 내 용도지역별 면적 기준 구성비</p>
-      <canvas id="landuse-composition-chart" height="250"></canvas>
-    </div>
-  </div>
 
-  <script src="app.js"></script>
-</body>
-</html>
+def project(coords, lng0, lat0):
+    mx = 111320 * math.cos(math.radians(lat0))
+    my = 110540
+    return [((x - lng0) * mx, (y - lat0) * my) for x, y in coords]
+
+
+def to_shapely(geometry, lng0, lat0):
+    if geometry["type"] == "Polygon":
+        rings = geometry["coordinates"]
+        shell = project(rings[0], lng0, lat0)
+        holes = [project(r, lng0, lat0) for r in rings[1:]]
+        return Polygon(shell, holes)
+    elif geometry["type"] == "MultiPolygon":
+        polys = []
+        for rings in geometry["coordinates"]:
+            shell = project(rings[0], lng0, lat0)
+            holes = [project(r, lng0, lat0) for r in rings[1:]]
+            polys.append(Polygon(shell, holes))
+        return MultiPolygon(polys)
+    return None
+
+
+def vworld_get_features(data_code, lng, lat, radius):
+    features = []
+    page = 1
+    size = 1000
+    while True:
+        params = {
+            "service": "data", "request": "GetFeature", "data": data_code,
+            "key": VWORLD_KEY, "domain": DOMAIN,
+            "geomFilter": f"POINT({lng} {lat})", "buffer": radius,
+            "geometry": "true", "attribute": "true", "crs": "EPSG:4326",
+            "format": "json", "size": size, "page": page,
+        }
+        res = requests.get(VWORLD_URL, params=params, headers=HEADERS, timeout=30).json()
+        result = res.get("response", {}).get("result")
+        if not result:
+            print("  응답 이상:", res.get("response"))
+            break
+        feats = result.get("featureCollection", {}).get("features", [])
+        features.extend(feats)
+        total = int(res["response"]["record"]["total"])
+        if page * size >= total or not feats:
+            break
+        page += 1
+    return features
+
+
+def main():
+    rows = []
+    for region, (lng, lat) in REGIONS.items():
+        print(f"[{region}] 용도지역지구(LT_C_UQ111) 가져오는 중...")
+        feats = vworld_get_features("LT_C_UQ111", lng, lat, RADIUS_M)
+        print(f"  {len(feats)}개 필지 (클리핑 전)")
+
+        circle = Point(0, 0).buffer(RADIUS_M, resolution=64)
+        circle_area = circle.area
+        print(f"  분석원 면적: {circle_area:,.0f} m^2 (반경 {RADIUS_M}m)")
+
+        by_type = defaultdict(float)
+        for f in feats:
+            uname = f["properties"].get("uname", "미분류")
+            geom = to_shapely(f["geometry"], lng, lat)
+            if geom is None or not geom.is_valid:
+                geom = geom.buffer(0) if geom else None
+            if geom is None:
+                continue
+            clipped = geom.intersection(circle)
+            by_type[uname] += clipped.area
+
+        total_clipped = sum(by_type.values())
+        print(f"  클리핑 후 합계: {total_clipped:,.0f} m^2 (분석원의 {total_clipped/circle_area*100:.1f}%)")
+        for uname, area in sorted(by_type.items(), key=lambda x: -x[1]):
+            pct_of_circle = area / circle_area * 100
+            rows.append({"region": region, "uname": uname, "area_m2": area, "pct_of_circle": pct_of_circle})
+
+    import csv
+    with open("out_landuse_summary_fixed.csv", "w", newline="", encoding="utf-8-sig") as fp:
+        w = csv.DictWriter(fp, fieldnames=["region", "uname", "area_m2", "pct_of_circle"])
+        w.writeheader()
+        for r in rows:
+            w.writerow({"region": r["region"], "uname": r["uname"],
+                        "area_m2": round(r["area_m2"], 1), "pct_of_circle": round(r["pct_of_circle"], 2)})
+    print("\n저장 완료: out_landuse_summary_fixed.csv")
+
+
+if __name__ == "__main__":
+    main()
