@@ -234,3 +234,14 @@ body {
   .map { height: 320px; }
   .stats { grid-template-columns: 1fr; }
 }
+.masthead{
+    text-align:center;
+}
+
+.masthead h1{
+    text-align:center;
+}
+
+.subtitle{
+    text-align:center;
+}
